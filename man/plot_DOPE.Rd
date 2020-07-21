@@ -33,6 +33,7 @@
   Returns a \link[ggplot2]{ggplot} object of the simulated distribution of possible effects with numerical summaries.
 }
 \examples{
+\dontrun{
   set.seed(8675309)
   x_vars <- 5
   n_obs <- 1000
@@ -46,7 +47,8 @@
   dat <- data.frame(y,X_mat)
   
   mod <- lm(y ~ ., data=dat)
-  dope <- DOPE(mod, nsims = 3000, n.cores = parallel::detectCores())
-  
+  dope <- DOPE(mod, nsims = 3000, n.cores = 1)
+
   plot_DOPE(dope,"V2")
+}
 }

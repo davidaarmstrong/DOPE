@@ -28,6 +28,7 @@
   The proportion of draws rejected by this lower thresholding is given by the filled diamonds.
 }
 \examples{
+\dontrun{
   set.seed(8675309)
   x_vars <- 5
   n_obs <- 1000
@@ -41,7 +42,8 @@
   dat <- data.frame(y,X_mat)
   
   mod <- lm(y ~ ., data=dat)
-  dope <- DOPE(mod, nsims = 3000, n.cores = parallel::detectCores())
+  dope <- DOPE(mod, nsims = 3000, n.cores = 1)
   
   sensitivity_plot(dope,"V2")
+}
 }

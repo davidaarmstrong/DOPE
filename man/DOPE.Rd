@@ -4,7 +4,7 @@
 \description{Wrapper for parallel \link[DOPE]{simfun}.  Takes a linear regression model fit by \link[stats]{lm} and returns the results information on the distribution of possible effects.  Currently implimented in both R and C++.  The C++ version is faster while the R version is easier for the expected user base to read and modify as needed.}
 \usage{
   DOPE(mod,nsims=10000,language="cpp",n.cores=1,
-    buff=sqrt(.Machine$double.eps), sequential=FALSE)
+    buff=sqrt(.Machine$double.eps))
 }
 \arguments{
   \item{mod}{
@@ -29,18 +29,16 @@
 }
 
 \examples{
+\dontrun{
   set.seed(8675309)
   x_vars <- 5
   n_obs <- 1000
   corm <- RandomCormCPP(nvars = x_vars)
   X_mat <- MASS::mvrnorm(n_obs, rep(0,x_vars), Sigma = corm, empirical = TRUE)
-  
   betas <- 1:x_vars
-  
   y <- X_mat %*% betas + rnorm(n_obs, 0, 1)
-  
   dat <- data.frame(y,X_mat)
-  
   mod <- lm(y ~ ., data=dat)
-  dope <- DOPE(mod, nsims = 3000, n.cores = parallel::detectCores())
+  dope <- DOPE(mod, nsims = 1500, n.cores = 1)
+  }
 }

@@ -1,7 +1,8 @@
 useDynLib(DOPE, .registration=TRUE)
-export("augment", "DOPE", "plot_DOPE", 
+export("DOPE", "plot_DOPE", 
        "RandomCorm", "sensitivity_plot", "simfun", 
-       "RandomCormCPP", "simfuncpp")
+       "RandomCormCPP", "simfuncpp", 
+       "augment", "augmentcpp")
 importFrom(Rcpp, evalCpp)
 importFrom("stats", "binomial", "coef", "cov", "lm", "median",
            "model.frame", "model.matrix", "na.omit", "quantile",
@@ -17,7 +18,8 @@ importFrom("ggplot2", "aes", "annotate", "element_text",
            "guide_legend", "guides", "scale_color_manual", 
            "scale_fill_grey", "scale_y_continuous", 
            "sec_axis", "theme", "theme_bw", "xlab", 
-           "xlim", "ylab")
+           "xlim", "ylab", "annotation_custom")
 importFrom("parallel", "makeCluster", "clusterEvalQ", 
            "clusterExport")
 importFrom("snow", "setDefaultClusterOptions")
+importFrom("gridExtra", "tableGrob")

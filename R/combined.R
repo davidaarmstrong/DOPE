@@ -144,25 +144,26 @@ DOPE <- function(mod,nsims=10000,language="cpp",n.cores=1,buff=sqrt(.Machine$dou
   }else{
     out <- NULL
     if(language=="cpp"){
-      for(i in 1:nsims){
-        attempt <- try(simfuncpp(vcvm,buff))
-        if(!inherits(attempt, "try-error")){
-          out <- rbind(out, attempt)
-          progress(i)
-        }
+      i <- 1
+      while(i <= nsims){
+        attempt <- tryCatch(simfuncpp(vcvm,buff), error=function(e)e)
+        if(inherits(attempt, "error")) next
+        out <- rbind(out, attempt)
+        progress(i)
+        i <- i+1
       }
     }
     if(language=="R"){
-      for(i in 1:nsims){
-        attempt <- try(simfun(vcvm,buff))
-        if(!inherits(attempt, "try-error")){
+      i <- 1
+      while(i <= nsims){
+        attempt <- tryCatch(simfun(vcvm,buff), error=function(e)e)
+        if(inherits(attempt, "error")) next
           out <- rbind(out, attempt)
           progress(i)
+          i <- i+1
         }
       }
     }
-    
-  }
   colnames(out) <- names
   
   if(length(g)!=0){
@@ -242,7 +243,6 @@ stats <- function(coefs){
 
 
 plot_DOPE <- function(output,vname,xmin=NULL,xmax=NULL,bw=NULL,shade=FALSE,include_naive = TRUE){
-  
   cond <- which(is.na(output$ControlFunction))
   if(length(cond)==0){
     include_naive <- FALSE
@@ -269,22 +269,27 @@ plot_DOPE <- function(output,vname,xmin=NULL,xmax=NULL,bw=NULL,shade=FALSE,inclu
     fillz <- "grey35"
     col <- "black"
   }
-  
-  ggplot(tmp,aes(x=tmp[,vname],fill=fillz)) + 
+  p1 <- ggplot(tmp,aes(x=tmp[,vname],fill=fillz)) + 
     geom_histogram(binwidth=bw,color=col,show.legend = F,na.rm=T) +
     scale_fill_grey() +
     theme_bw() +
     xlim(lims) +
     xlab("Coefficient Value") +
-    ylab("Frequency") + 
-    annotate("table",-Inf,Inf,
-             label=list(stats(output[,vname])),
-             hjust=0,vjust=1) -> p1
+    ylab("Frequency") 
   if(include_naive){
-    p1 + geom_vline(xintercept = old[,vname],color="red",size=1.25)
-  }else{
-    p1
+    p1 <- p1 + geom_vline(xintercept = old[,vname],color="red",size=1.25)
   }
+  b <- ggplot_build(p1)
+  x1 <- b$layout$panel_scales_x[[1]]$limits[1]
+  xw <- diff(b$layout$panel_scales_x[[1]]$limits)
+  x1 <- x1+.015*xw
+  y2 <- b$layout$panel_scales_y[[1]]$range$range[2]
+  yw <- diff(b$layout$panel_scales_y[[1]]$range$range)
+  y2 <- y2 - .015*yw
+  y1 <- y2-.2*yw
+  x2 <- x1+ .15*xw
+  mytable <- stats(output[,vname])
+  p1 + annotation_custom(tableGrob(mytable, rows=rep("", nrow(mytable))), xmin=x1, xmax=x2, ymin=y1, ymax=y2)
 }
 
 sensitivity_plot <- function(output,vname,adj=NULL){
