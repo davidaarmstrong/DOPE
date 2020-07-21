@@ -123,25 +123,46 @@ DOPE <- function(mod,nsims=10000,language="cpp",n.cores=1,buff=sqrt(.Machine$dou
   
   pb <- txtProgressBar(max = nsims, style = 3)
   progress <- function(n) setTxtProgressBar(pb, n)
-  opts <- list(progress = progress)
-  
-  cl <- parallel::makeCluster(n.cores)
-  parallel::clusterEvalQ(cl,library(DOPE))
-  parallel::clusterExport(cl,"vcvm",envir=environment())
-  registerDoSNOW(cl)
-  
-  if(language=="cpp"){
-    out <- foreach(i=1:nsims,
-                   .combine=rbind,
-                   .options.snow = opts) %dopar% try(simfuncpp(vcvm,buff))
+  if(n.cores > 1){
+    opts <- list(progress = progress)
+    cl <- makeCluster(n.cores)
+    clusterEvalQ(cl,library(DOPE))
+    clusterExport(cl,"vcvm",envir=environment())
+    registerDoSNOW(cl)
+    
+    if(language=="cpp"){
+      out <- foreach(i=1:nsims,
+                     .combine=rbind,
+                     .options.snow = opts) %dopar% try(simfuncpp(vcvm,buff))
+    }
+    if(language=="R"){
+      out <- foreach(i=1:nsims,
+                     .combine=rbind,
+                     .options.snow = opts) %dopar% try(simfun(vcvm,buff))
+    }
+    suppressWarnings(try(stopCluster(cl)))
+  }else{
+    out <- NULL
+    if(language=="cpp"){
+      for(i in 1:nsims){
+        attempt <- try(simfuncpp(vcvm,buff))
+        if(!inherits(attempt, "try-error")){
+          out <- rbind(out, attempt)
+          progress(i)
+        }
+      }
+    }
+    if(language=="R"){
+      for(i in 1:nsims){
+        attempt <- try(simfun(vcvm,buff))
+        if(!inherits(attempt, "try-error")){
+          out <- rbind(out, attempt)
+          progress(i)
+        }
+      }
+    }
+    
   }
-  if(language=="R"){
-    out <- foreach(i=1:nsims,
-                   .combine=rbind,
-                   .options.snow = opts) %dopar% try(simfun(vcvm,buff))
-  }
-  suppressWarnings(try(stopCluster(cl)))
-  
   colnames(out) <- names
   
   if(length(g)!=0){
@@ -172,7 +193,7 @@ simfuncpp <- function(vcvm,buff=sqrt(.Machine$double.eps)){
                     break
                   }
                   aug <- augmentcpp(vcvm,buff)
-                  psd <- !class(try(solve(aug[-1,-1]))) == "try-error"
+                  psd <- !inherits(try(solve(aug[-1,-1])),  "try-error")
                 }
                 
                 zz <- aug[-1,-1]
@@ -193,7 +214,7 @@ simfun <- function(vcvm,buff=sqrt(.Machine$double.eps)){
                     break
                   }
                   aug <- augment(vcvm,buff)
-                  psd <- !class(try(solve(aug[-1,-1]))) == "try-error"
+                  psd <- !inherits(try(solve(aug[-1,-1])), "try-error")
                 }
                 zz <- aug[-1,-1]
                 zy <- as.matrix(aug[1,2:ncol(aug)])
@@ -267,7 +288,6 @@ plot_DOPE <- function(output,vname,xmin=NULL,xmax=NULL,bw=NULL,shade=FALSE,inclu
 }
 
 sensitivity_plot <- function(output,vname,adj=NULL){
-  require(magrittr, quietly = T)
   cond <- which(is.na(output$ControlFunction))
   if(length(cond)!=0){
     old <- output[cond,]

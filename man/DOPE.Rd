@@ -3,7 +3,8 @@
 \title{Generate a distribution of possible effects.}
 \description{Wrapper for parallel \link[DOPE]{simfun}.  Takes a linear regression model fit by \link[stats]{lm} and returns the results information on the distribution of possible effects.  Currently implimented in both R and C++.  The C++ version is faster while the R version is easier for the expected user base to read and modify as needed.}
 \usage{
-  DOPE(mod,nsims=10000,language="cpp",n.cores=1,buff=sqrt(.Machine$double.eps))
+  DOPE(mod,nsims=10000,language="cpp",n.cores=1,
+    buff=sqrt(.Machine$double.eps), sequential=FALSE)
 }
 \arguments{
   \item{mod}{

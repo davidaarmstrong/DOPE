@@ -1,3 +1,23 @@
 useDynLib(DOPE, .registration=TRUE)
+export("augment", "DOPE", "plot_DOPE", 
+       "RandomCorm", "sensitivity_plot", "simfun", 
+       "RandomCormCPP", "simfuncpp")
 importFrom(Rcpp, evalCpp)
-exportPattern("^[[:alpha:]]+")
+importFrom("stats", "binomial", "coef", "cov", "lm", "median",
+           "model.frame", "model.matrix", "na.omit", "quantile",
+           "runif")
+importFrom("utils", "setTxtProgressBar", "txtProgressBar")
+importFrom("magrittr", "%>%")    
+importFrom("foreach", "%dopar%", "foreach")
+importFrom("parallel", "stopCluster")
+importFrom("doSNOW", "registerDoSNOW")
+importFrom("ggplot2", "aes", "annotate", "element_text", 
+           "geom_histogram", "geom_hline", "geom_point", 
+           "geom_vline", "ggplot", "ggplot_build", 
+           "guide_legend", "guides", "scale_color_manual", 
+           "scale_fill_grey", "scale_y_continuous", 
+           "sec_axis", "theme", "theme_bw", "xlab", 
+           "xlim", "ylab")
+importFrom("parallel", "makeCluster", "clusterEvalQ", 
+           "clusterExport")
+importFrom("snow", "setDefaultClusterOptions")
